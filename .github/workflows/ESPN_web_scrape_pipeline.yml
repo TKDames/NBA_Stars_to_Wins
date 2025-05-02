@@ -1,0 +1,36 @@
+name: Run espn stats webscrape and Load to Raw
+
+on: 
+    schedule:
+        - cron: '0 12 * * 1'  # Every Monday at 12:00 PM UTC
+    workflow_dispatch:         # optional maunal trigger
+
+env:
+    PG_USER:       ${{ secrets.PG_USER }}
+    PG_PASSWORD:   ${{ secrets.PG_PASSWORD }}
+    PG_HOST:       ${{ secrets.PG_HOST }}
+    PG_DB:         ${{ secrets.PG_DB }}
+
+
+jobs:
+    extract_load:
+        name: Run espn stats webscrape and Load to Raw
+        runs-on: ubuntu-lastest
+
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v3
+
+            - name: Set up python
+              uses: actions/setup-python@v4
+              with:
+                python-version: '3.11'
+
+            - name: Install python dependencies
+              run: |
+                pip install -r requirements.txt
+                pip install papermill psycopg2-binary
+
+            - name: Extract and Load products to raw schema
+              run: |
+                papermill notebooks/ESPN_Web_Scrape_Extract_Load_Raw.ipynb output_web.ipynb
